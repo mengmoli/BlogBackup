@@ -1,5 +1,6 @@
 ---
 title: mysql查询数据字典
+date: 2018-01-18
 tags:
 - mysql
 ---
