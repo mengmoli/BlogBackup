@@ -89,4 +89,42 @@ title随便填一个描述，把刚刚复制的ssh_key填到key里面,
  
 ```
 这样我们就成功连接到了自己的github。
-   
+### 第三步：Github Pages设置
+[Github Pages](https://pages.github.com/)是Github免费提供给开发者的一款托管个人网站的产品  
+每个帐号只能有一个仓库来存放个人主页，而且仓库的名字必须是username/username.github.io，  
+这是特殊的命名约定。你可以通过http://username.github.io 来访问你的个人主页。  
+在github点击右上角你的头像选择your profile，然后选择Repositories，点击New新建一个repo  
+![github_repo](/assets/blogImg/github_repo.png)
+在github在这里我创建了一个github repo叫做mengmoli.github.io，用来托管我们的网站  
+![创建github_page_repo](/assets/blogImg/创建githubpage_repo.png)
+### 第四步：安装hexo
+在本地新建一个目录，用来存放我们的hexo，然后在cd到这个文件夹输入以下命令
+```text
+$ npm install hexo-cli -g
+$ hexo init blog
+$ cd blog
+$ npm install
+$ hexo g  -- 或者hexo generate,生成静态文件
+$ hexo s  -- 或者hexo server，启动本地web服务,预览我们的博客，可以在http://localhost:4000/ 查看
+```
+然后打开http://localhost:4000/ 就可以看到一篇内置的blog。
+### 第五步：部署Hexo到Github Pages
+hexo可以部署到很多平台，这里我们部署到刚刚我们创建的的github pages  
+打开bolg目录下的_config.yml,修改deploy配置  
+![deploy配置](/assets/blogImg/hexo_deploy_config.png)
+这里的repo替换成我们刚刚创建的repo的地址
+![查看github repo 地址](/assets/blogImg/github_page_git_address.png)
+然后保存，接下来回到命令行，输入命令
+```text
+$ hexo d
+```
+这样我们就完成了部署。
+##### 可能遇到的问题：
+1.部署注意需要提前安装一个扩展
+```text
+$ npm install hexo-deployer-git --save
+```
+
+
+
+
