@@ -34,7 +34,7 @@ cmd startup.cmd -m standalone
 
 ![nacos控制台界面](/assets/blogImg/nacos-console.png)
 ### 第二步 编写应用接入到Nacos注册中心
-创建一个spring-cloud-alibaba-learning项目，pom.xml加入全局依赖配置
+创建一个<font color=yellow>spring-cloud-alibaba-learning</font>项目，pom.xml加入全局依赖配置
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -99,7 +99,7 @@ cmd startup.cmd -m standalone
 </project>
 
 ```
-接下来创建一个模块 nacos-discovery-server, pom.xml 加入
+接下来创建一个模块 <font color=yellow>nacos-discovery-server</font>, pom.xml 加入
 ```
     <dependencies>
         <dependency>
@@ -141,7 +141,7 @@ server:
   port: 8001
 spring:
   application:
-    name: nocos-discovery-server
+    name: nacos-discovery-server
   cloud:
         nacos:
           discovery:
@@ -153,7 +153,72 @@ spring:
 ```
 启动后，可以看到控制台打印,表示注册成功
 ```
-INFO 44792 --- [    main] o.s.c.a.n.registry.NacosServiceRegistry  : nacos registry, nocos-discovery-server 10.0.75.1:8001 register finished
+INFO 44792 --- [    main] o.s.c.a.n.registry.NacosServiceRegistry  : nacos registry, nacos-discovery-server 10.0.75.1:8001 register finished
 ```
 在nocos控制台查看服务列表，注册成功  
-![nacos服务列表](/assets/blogImg/nacos-service-list.png)
+![nacos服务列表](/assets/blogImg/nacos-service-list.png)  
+  
+接下来，编写一个服务来调用nacos-discovery-server的hello服务,  
+新创建一个模块nacos-discovery-client，pom文件和nacos-discovery-server一样，编写主类
+```java
+@EnableDiscoveryClient
+@SpringBootApplication
+public class DiscoveryClientApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(DiscoveryClientApplication.class, args);
+    }
+
+    @Slf4j
+    @RestController
+    static class TestController {
+
+        private LoadBalancerClient loadBalancerClient;
+
+        public TestController(LoadBalancerClient loadBalancerClient) {
+            this.loadBalancerClient = loadBalancerClient;
+        }
+
+        @GetMapping("/test")
+        public String test() {
+            // 通过spring cloud common中的负载均衡接口选取服务提供节点实现接口调用
+            ServiceInstance serviceInstance = loadBalancerClient.choose("nacos-discovery-server");
+            String url = serviceInstance.getUri() + "/hello?name=" + "nacos";
+            RestTemplate restTemplate = new RestTemplate();
+            String result = restTemplate.getForObject(url, String.class);
+            return "Invoke : " + url + ", return : " + result;
+        }
+    }
+}
+```
+加入bootstrap.yml配置
+```
+server:
+  port: 8002
+spring:
+  application:
+    name: nacos-discovery-client
+  cloud:
+        nacos:
+          discovery:
+            server-addr: 127.0.0.1:8848
+  profiles:
+    active: dev
+  main:
+    allow-bean-definition-overriding: true
+```
+同时启动两个项目，注册成功后，在postman或者浏览器输入 http://127.0.0.1:8002/test  
+可以看到返回结果，说明通过nacos注册中心调用服务成功
+```
+Invoke : http://10.0.75.1:8001/hello?name=nacos, return : hello nacos
+```
+### 参考资料 
+
+[Nacos官方文档](https://nacos.io/zh-cn/docs/what-is-nacos.html)
+
+[Nacos源码分析](http://www.iocoder.cn/Nacos/good-collection/?vip)
+
+### 代码示例
+
+本文示例读者可以通过查看下面仓库的中的nacos-discovery-server和nacos-discovery-clien项目  
+> Gitee: https://gitee.com/DreamStrange/spring-cloud-alibaba-learning
